@@ -96,6 +96,7 @@ export const PostCard = React.memo(function PostCard({
             likes={post.likes}
             fullname={`t3_${post.id}`}
             onVote={onVote}
+            upvoteRatio={post.upvote_ratio}
             compact
           />
 

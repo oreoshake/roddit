@@ -5,6 +5,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 interface PostsStoreState {
   readPostIds: string[];
   hiddenPostIds: string[];
+  hideRead: boolean;
 }
 
 interface PostsStoreActions {
@@ -15,6 +16,7 @@ interface PostsStoreActions {
   isRead: (id: string) => boolean;
   isHidden: (id: string) => boolean;
   clearReadHistory: () => void;
+  toggleHideRead: () => void;
 }
 
 type PostsStore = PostsStoreState & PostsStoreActions;
@@ -26,6 +28,7 @@ export const usePostsStore = create<PostsStore>()(
     (set, get) => ({
       readPostIds: [],
       hiddenPostIds: [],
+      hideRead: false,
 
       markAsRead: (id: string) => {
         const {readPostIds} = get();
@@ -67,6 +70,10 @@ export const usePostsStore = create<PostsStore>()(
 
       clearReadHistory: () => {
         set({readPostIds: []});
+      },
+
+      toggleHideRead: () => {
+        set(state => ({hideRead: !state.hideRead}));
       },
     }),
     {

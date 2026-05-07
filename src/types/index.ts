@@ -51,6 +51,7 @@ export interface Comment {
   body: string;
   body_html?: string;
   score: number;
+  upvote_ratio?: number;
   replies: Comment[];
   depth: number;
   created_utc: number;
@@ -145,6 +146,8 @@ export type ExploreStackParamList = {
 
 export type ProfileStackParamList = {
   Profile: undefined;
+  Subreddit: {subredditName: string};
+  PostDetail: {postId: string; subredditName: string; post?: Post};
 };
 
 export type MainTabParamList = {

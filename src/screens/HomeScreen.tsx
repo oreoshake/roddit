@@ -1,4 +1,4 @@
-import React, {useCallback, useMemo} from 'react';
+import React, {useCallback, useLayoutEffect, useMemo} from 'react';
 import {
   FlatList,
   RefreshControl,
@@ -36,6 +36,9 @@ export function HomeScreen({navigation}: HomeScreenProps): React.JSX.Element {
   const insets = useSafeAreaInsets();
   const queryClient = useQueryClient();
   const markAsRead = usePostsStore(s => s.markAsRead);
+  const hideRead = usePostsStore(s => s.hideRead);
+  const toggleHideRead = usePostsStore(s => s.toggleHideRead);
+  const readPostIds = usePostsStore(s => s.readPostIds);
 
   const {
     data,
@@ -63,10 +66,27 @@ export function HomeScreen({navigation}: HomeScreenProps): React.JSX.Element {
     },
   });
 
-  const posts = useMemo<Post[]>(
-    () => data?.pages.flatMap(p => p.posts) ?? [],
-    [data],
-  );
+  const readSet = useMemo(() => new Set(readPostIds), [readPostIds]);
+
+  const posts = useMemo<Post[]>(() => {
+    const all = data?.pages.flatMap(p => p.posts) ?? [];
+    return hideRead ? all.filter(p => !readSet.has(p.id)) : all;
+  }, [data, hideRead, readSet]);
+
+  useLayoutEffect(() => {
+    navigation.setOptions({
+      headerRight: () => (
+        <TouchableOpacity
+          onPress={toggleHideRead}
+          activeOpacity={0.7}
+          style={{marginRight: 4, paddingHorizontal: 8, paddingVertical: 4}}>
+          <Text style={{fontSize: 13, fontWeight: '600', color: hideRead ? colors.primary : colors.textSecondary}}>
+            {hideRead ? 'Show All' : 'Hide Read'}
+          </Text>
+        </TouchableOpacity>
+      ),
+    });
+  }, [navigation, hideRead, toggleHideRead, colors]);
 
   const handlePostPress = useCallback(
     (post: Post) => {

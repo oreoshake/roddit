@@ -16,6 +16,15 @@ interface VoteButtonsProps {
   fullname: string;
   onVote: (fullname: string, dir: VoteDirection) => void;
   compact?: boolean;
+  upvoteRatio?: number;
+}
+
+function estimateUps(score: number, ratio: number): number | null {
+  const denom = 2 * ratio - 1;
+  if (Math.abs(denom) < 0.05) {
+    return null; // ratio too close to 0.5 — result is unreliable
+  }
+  return Math.round((score * ratio) / denom);
 }
 
 export function VoteButtons({
@@ -24,6 +33,7 @@ export function VoteButtons({
   fullname,
   onVote,
   compact = false,
+  upvoteRatio,
 }: VoteButtonsProps): React.JSX.Element {
   const {colors} = useTheme();
 
@@ -71,6 +81,9 @@ export function VoteButtons({
       ? colors.downvote
       : colors.text;
 
+  const estimatedUps =
+    upvoteRatio !== undefined ? estimateUps(score, upvoteRatio) : null;
+
   const size = compact ? 18 : 22;
 
   return (
@@ -85,13 +98,22 @@ export function VoteButtons({
         </Animated.Text>
       </TouchableOpacity>
 
-      <Text
-        style={[
-          styles.score,
-          {color: scoreColor, fontSize: compact ? 12 : 14},
-        ]}>
-        {formatScore(score)}
-      </Text>
+      <View style={styles.scoreColumn}>
+        {estimatedUps !== null ? (
+          <>
+            <Text style={[styles.estimatedUps, {color: scoreColor, fontSize: compact ? 12 : 14}]}>
+              ≈{formatScore(estimatedUps)}
+            </Text>
+            <Text style={[styles.netScore, {color: colors.textSecondary, fontSize: compact ? 10 : 11}]}>
+              {formatScore(score)} pts
+            </Text>
+          </>
+        ) : (
+          <Text style={[styles.estimatedUps, {color: scoreColor, fontSize: compact ? 12 : 14}]}>
+            {formatScore(score)}
+          </Text>
+        )}
+      </View>
 
       <TouchableOpacity onPress={handleDownvote} hitSlop={HIT_SLOP} activeOpacity={0.7}>
         <Animated.Text
@@ -121,9 +143,17 @@ const styles = StyleSheet.create({
   arrow: {
     fontWeight: '700',
   },
-  score: {
+  scoreColumn: {
+    alignItems: 'center',
+    minWidth: 36,
+  },
+  estimatedUps: {
     fontWeight: '700',
-    minWidth: 32,
     textAlign: 'center',
+  },
+  netScore: {
+    fontWeight: '400',
+    textAlign: 'center',
+    marginTop: 1,
   },
 });

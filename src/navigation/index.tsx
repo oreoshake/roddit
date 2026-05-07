@@ -102,11 +102,24 @@ function ProfileStackNavigator(): React.JSX.Element {
         headerStyle: {backgroundColor: colors.surface},
         headerTintColor: colors.text,
         headerShadowVisible: false,
+        headerBackTitleVisible: false,
       }}>
       <ProfileStack.Screen
         name="Profile"
         component={ProfileScreen}
         options={{title: 'Profile'}}
+      />
+      <ProfileStack.Screen
+        name="Subreddit"
+        component={SubredditScreen as React.ComponentType<object>}
+        options={({route}) => ({
+          title: `r/${(route.params as {subredditName: string}).subredditName}`,
+        })}
+      />
+      <ProfileStack.Screen
+        name="PostDetail"
+        component={PostDetailScreen as React.ComponentType<object>}
+        options={{title: 'Post'}}
       />
     </ProfileStack.Navigator>
   );

@@ -11,17 +11,22 @@ import {
 } from 'react-native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {useQuery} from '@tanstack/react-query';
+import {useNavigation} from '@react-navigation/native';
+import type {NativeStackNavigationProp} from '@react-navigation/native-stack';
 import {useTheme} from '../components/common/ThemeProvider';
 import {LoadingSpinner} from '../components/common/LoadingSpinner';
 import {useAuthStore} from '../store/authStore';
 import {usePostsStore} from '../store/postsStore';
 import {getSubscribedSubreddits} from '../services/api';
 import {formatScore, formatRelativeTime} from '../utils/time';
-import type {Subreddit} from '../types';
+import type {Subreddit, ProfileStackParamList} from '../types';
+
+type ProfileNavProp = NativeStackNavigationProp<ProfileStackParamList, 'Profile'>;
 
 export function ProfileScreen(): React.JSX.Element {
   const {colors, theme, toggleTheme} = useTheme();
   const insets = useSafeAreaInsets();
+  const navigation = useNavigation<ProfileNavProp>();
   const {user, logout} = useAuthStore();
   const {readPostIds, clearReadHistory} = usePostsStore();
 
@@ -170,8 +175,10 @@ export function ProfileScreen(): React.JSX.Element {
           <LoadingSpinner size="small" fullScreen={false} />
         ) : subscribedSubs && subscribedSubs.length > 0 ? (
           subscribedSubs.map((sub, index) => (
-            <View
+            <TouchableOpacity
               key={sub.id}
+              activeOpacity={0.7}
+              onPress={() => navigation.navigate('Subreddit', {subredditName: sub.displayName})}
               style={[
                 styles.subRow,
                 index < subscribedSubs.length - 1 && {
@@ -196,7 +203,8 @@ export function ProfileScreen(): React.JSX.Element {
                   {formatScore(sub.subscribers)} members
                 </Text>
               </View>
-            </View>
+              <Text style={[styles.chevron, {color: colors.textSecondary}]}>›</Text>
+            </TouchableOpacity>
           ))
         ) : (
           <Text style={[styles.emptyText, {color: colors.textSecondary}]}>

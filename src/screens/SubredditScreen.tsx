@@ -55,6 +55,9 @@ export function SubredditScreen({
   const insets = useSafeAreaInsets();
   const queryClient = useQueryClient();
   const markAsRead = usePostsStore(s => s.markAsRead);
+  const hideRead = usePostsStore(s => s.hideRead);
+  const toggleHideRead = usePostsStore(s => s.toggleHideRead);
+  const readPostIds = usePostsStore(s => s.readPostIds);
 
   const [sort, setSort] = useState<SortOption>('hot');
 
@@ -91,10 +94,12 @@ export function SubredditScreen({
       vote(fullname, dir),
   });
 
-  const posts = useMemo<Post[]>(
-    () => data?.pages.flatMap(p => p.posts) ?? [],
-    [data],
-  );
+  const readSet = useMemo(() => new Set(readPostIds), [readPostIds]);
+
+  const posts = useMemo<Post[]>(() => {
+    const all = data?.pages.flatMap(p => p.posts) ?? [];
+    return hideRead ? all.filter(p => !readSet.has(p.id)) : all;
+  }, [data, hideRead, readSet]);
 
   const handlePostPress = useCallback(
     (post: Post) => {
@@ -215,7 +220,7 @@ export function SubredditScreen({
           </TouchableOpacity>
         </View>
 
-        {/* Sort tabs */}
+        {/* Sort tabs + hide-read toggle */}
         <View
           style={[
             styles.sortRow,
@@ -248,6 +253,21 @@ export function SubredditScreen({
               </Text>
             </TouchableOpacity>
           ))}
+          <TouchableOpacity
+            style={styles.hideReadButton}
+            onPress={toggleHideRead}
+            activeOpacity={0.7}>
+            <Text
+              style={[
+                styles.sortTabText,
+                {
+                  color: hideRead ? colors.primary : colors.textSecondary,
+                  fontWeight: hideRead ? '700' : '400',
+                },
+              ]}>
+              {hideRead ? 'Show All' : 'Hide Read'}
+            </Text>
+          </TouchableOpacity>
         </View>
       </View>
     ),
@@ -256,6 +276,8 @@ export function SubredditScreen({
       subredditInfo,
       subscribeMutation,
       sort,
+      hideRead,
+      toggleHideRead,
       colors,
     ],
   );
@@ -350,6 +372,12 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingVertical: 12,
     alignItems: 'center',
+  },
+  hideReadButton: {
+    paddingHorizontal: 12,
+    paddingVertical: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   sortTabText: {
     fontSize: 14,

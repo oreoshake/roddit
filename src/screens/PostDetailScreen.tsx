@@ -212,6 +212,7 @@ export function PostDetailScreen({
               likes={post.likes}
               fullname={`t3_${post.id}`}
               onVote={handleVote}
+              upvoteRatio={post.upvote_ratio}
             />
 
             <View style={styles.actionButtons}>
