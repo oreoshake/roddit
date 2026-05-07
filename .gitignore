@@ -1,0 +1,87 @@
+# Yarn PnP
+.yarn/cache
+.yarn/install-state.gz
+.yarn/unplugged
+.yarn/build-state.yml
+
+# Dependencies
+node_modules/
+
+# React Native build output
+ios/build/
+ios/Pods/
+ios/DerivedData/
+android/build/
+android/app/build/
+android/.gradle/
+android/local.properties
+
+# Compiled output
+*.jsbundle
+*.map
+
+# Metro
+.metro-health-check*
+
+# Environment
+.env
+.env.*
+!.env.example
+
+# Xcode
+*.pbxuser
+!default.pbxuser
+*.mode1v3
+!default.mode1v3
+*.mode2v3
+!default.mode2v3
+*.perspectivev3
+!default.perspectivev3
+xcuserdata/
+*.xccheckout
+*.moved-aside
+DerivedData
+*.hmap
+*.ipa
+*.xcuserstate
+ios/.xcode.env.local
+
+# Android
+*.apk
+*.aab
+*.ap_
+*.dex
+.gradle/
+local.properties
+gen/
+out/
+captures/
+.externalNativeBuild/
+.cxx/
+
+# Buck
+buck-out/
+\.buckd/
+*.keystore
+!debug.keystore
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# VSCode
+.vscode/
+
+# JetBrains
+.idea/
+*.iml
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Testing
+coverage/
