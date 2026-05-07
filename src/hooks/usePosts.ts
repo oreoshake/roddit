@@ -2,7 +2,6 @@ import {
   useInfiniteQuery,
   useQuery,
   useQueryClient,
-  type InfiniteData,
 } from '@tanstack/react-query';
 import {
   getSubredditPosts,
@@ -10,8 +9,6 @@ import {
   type PostsPage,
 } from '../services/api';
 import type {Comment, Post, SortOption, CommentSort} from '../types';
-
-// ─── Query keys ───────────────────────────────────────────────────────────────
 
 export const postKeys = {
   all: ['posts'] as const,
@@ -21,23 +18,15 @@ export const postKeys = {
     [...postKeys.all, 'comments', sub, postId, sort] as const,
 };
 
-// ─── useSubredditPosts ────────────────────────────────────────────────────────
-
-export function useSubredditPosts(
-  subreddit: string,
-  sort: SortOption = 'hot',
-) {
-  return useInfiniteQuery<PostsPage, Error, InfiniteData<PostsPage>, readonly string[], string | undefined>({
+export function useSubredditPosts(subreddit: string, sort: SortOption = 'hot') {
+  return useInfiniteQuery<PostsPage, Error>({
     queryKey: postKeys.subreddit(subreddit, sort),
-    queryFn: ({pageParam}) =>
+    queryFn: ({pageParam}: {pageParam?: string}) =>
       getSubredditPosts(subreddit, sort, pageParam),
-    initialPageParam: undefined,
-    getNextPageParam: lastPage => lastPage.after ?? undefined,
-    staleTime: 1000 * 60 * 5, // 5 min
+    getNextPageParam: (lastPage: PostsPage) => lastPage.after ?? undefined,
+    staleTime: 1000 * 60 * 5,
   });
 }
-
-// ─── usePostComments ──────────────────────────────────────────────────────────
 
 interface PostCommentsResult {
   post: Post;
@@ -52,20 +41,17 @@ export function usePostComments(
   return useQuery<PostCommentsResult, Error>({
     queryKey: postKeys.comments(subredditName, postId, sort),
     queryFn: () => getPostComments(subredditName, postId, sort),
-    staleTime: 1000 * 60 * 2, // 2 min
+    staleTime: 1000 * 60 * 2,
   });
 }
 
-// ─── usePrefetchPost ──────────────────────────────────────────────────────────
-
 export function usePrefetchPost(subredditName: string, postId: string) {
   const queryClient = useQueryClient();
-
   return () => {
-    queryClient.prefetchQuery({
-      queryKey: postKeys.comments(subredditName, postId, 'best'),
-      queryFn: () => getPostComments(subredditName, postId, 'best'),
-      staleTime: 1000 * 60 * 2,
-    });
+    queryClient.prefetchQuery(
+      postKeys.comments(subredditName, postId, 'best'),
+      () => getPostComments(subredditName, postId, 'best'),
+      {staleTime: 1000 * 60 * 2},
+    );
   };
 }

@@ -25,6 +25,8 @@ const DEPTH_COLORS = [
   '#FF6534',
 ];
 
+const INDENT_WIDTH = 10;
+
 export function CommentItem({
   comment,
   onVote,
@@ -37,25 +39,25 @@ export function CommentItem({
   const depthColor =
     DEPTH_COLORS[comment.depth % DEPTH_COLORS.length] ?? colors.border;
 
-  const indentWidth = comment.depth * 12;
-
   return (
-    <View style={[styles.wrapper, {marginLeft: indentWidth}]}>
-      {/* Left depth indicator */}
+    <View style={styles.wrapper}>
+      {/* Indent bar — tapping it toggles collapse */}
       {comment.depth > 0 && (
         <TouchableOpacity
           style={[styles.depthBar, {backgroundColor: depthColor}]}
           onPress={toggleCollapsed}
-          activeOpacity={0.6}
+          activeOpacity={0.5}
+          hitSlop={{left: 6, right: 6, top: 0, bottom: 0}}
         />
       )}
 
-      <View style={[styles.content, {borderColor: colors.border}]}>
-        {/* Header */}
+      {/* Comment body + children stacked vertically */}
+      <View style={styles.body}>
+        {/* Header row — tap to collapse */}
         <TouchableOpacity
           style={styles.header}
           onPress={toggleCollapsed}
-          activeOpacity={0.8}>
+          activeOpacity={0.7}>
           <Text style={[styles.author, {color: colors.primary}]}>
             {comment.is_submitter ? (
               <Text style={{color: colors.upvote}}>{comment.author} [OP]</Text>
@@ -69,27 +71,30 @@ export function CommentItem({
           {comment.distinguished === 'admin' && (
             <Text style={[styles.badge, {color: colors.error}]}> ADMIN</Text>
           )}
-          <Text style={[styles.dot, {color: colors.textSecondary}]}> • </Text>
-          <Text style={[styles.score, {color: colors.textSecondary}]}>
+          <Text style={[styles.meta, {color: colors.textSecondary}]}>
+            {'  '}
             {formatScore(comment.score)} pts
-          </Text>
-          <Text style={[styles.dot, {color: colors.textSecondary}]}> • </Text>
-          <Text style={[styles.time, {color: colors.textSecondary}]}>
+            {'  ·  '}
             {formatRelativeTime(comment.created_utc)}
           </Text>
           <Text style={[styles.collapseIcon, {color: colors.textSecondary}]}>
-            {collapsed ? ' [+]' : ' [–]'}
+            {'  '}{collapsed ? '[+]' : '[–]'}
           </Text>
         </TouchableOpacity>
 
-        {!collapsed && (
+        {collapsed ? (
+          comment.replies.length > 0 ? (
+            <Text style={[styles.collapsedHint, {color: colors.textSecondary}]}>
+              {comment.replies.length}{' '}
+              {comment.replies.length === 1 ? 'reply' : 'replies'} hidden
+            </Text>
+          ) : null
+        ) : (
           <>
-            {/* Body */}
-            <Text style={[styles.body, {color: colors.text}]}>
+            <Text style={[styles.commentBody, {color: colors.text}]}>
               {comment.body}
             </Text>
 
-            {/* Vote row */}
             <View style={styles.voteRow}>
               <VoteButtons
                 score={comment.score}
@@ -99,18 +104,17 @@ export function CommentItem({
                 compact
               />
             </View>
+
+            {comment.replies.length > 0 && (
+              <View style={[styles.replies, {marginLeft: INDENT_WIDTH}]}>
+                {comment.replies.map(reply => (
+                  <CommentItem key={reply.id} comment={reply} onVote={onVote} />
+                ))}
+              </View>
+            )}
           </>
         )}
       </View>
-
-      {/* Nested replies */}
-      {!collapsed && comment.replies.length > 0 && (
-        <View style={styles.replies}>
-          {comment.replies.map(reply => (
-            <CommentItem key={reply.id} comment={reply} onVote={onVote} />
-          ))}
-        </View>
-      )}
     </View>
   );
 }
@@ -118,22 +122,22 @@ export function CommentItem({
 const styles = StyleSheet.create({
   wrapper: {
     flexDirection: 'row',
+    paddingTop: 10,
   },
   depthBar: {
     width: 2,
-    marginRight: 8,
     borderRadius: 1,
+    marginRight: 8,
+    alignSelf: 'stretch',
   },
-  content: {
+  body: {
     flex: 1,
-    paddingVertical: 8,
-    borderBottomWidth: StyleSheet.hairlineWidth,
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     flexWrap: 'wrap',
-    marginBottom: 6,
+    marginBottom: 4,
   },
   author: {
     fontSize: 13,
@@ -143,29 +147,29 @@ const styles = StyleSheet.create({
     fontSize: 11,
     fontWeight: '700',
   },
-  dot: {
-    fontSize: 13,
-  },
-  score: {
-    fontSize: 12,
-  },
-  time: {
+  meta: {
     fontSize: 12,
   },
   collapseIcon: {
     fontSize: 12,
-    marginLeft: 4,
   },
-  body: {
+  collapsedHint: {
+    fontSize: 12,
+    fontStyle: 'italic',
+    marginTop: 2,
+    marginBottom: 6,
+  },
+  commentBody: {
     fontSize: 14,
     lineHeight: 20,
-    marginBottom: 8,
+    marginBottom: 6,
   },
   voteRow: {
     flexDirection: 'row',
     alignItems: 'center',
+    marginBottom: 4,
   },
   replies: {
-    flex: 1,
+    marginTop: 4,
   },
 });

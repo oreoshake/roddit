@@ -162,13 +162,17 @@ Roddit/
 
 ## Getting Started
 
-1. Clone the repository
-2. Install dependencies: `yarn install`
-3. Install iOS dependencies: `cd ios && pod install` (iOS only)
-4. Register the app on Reddit (https://www.reddit.com/prefs/apps)
-5. Add your Reddit app credentials to environment variables or config file
-6. Run on iOS: `yarn ios`
-7. Run on Android: `yarn android`
+The `ios/` and `android/` native directories are not committed. Generate them once with the React Native CLI before running the app.
+
+1. Install the React Native CLI: `npm install -g @react-native-community/cli`
+2. Generate native projects: `npx react-native init RodditNative --skip-install`, then copy the generated `ios/` and `android/` folders into this repo (or run `npx react-native build-ios` / `build-android` after wiring up the bundle entry)
+   — **Shortcut**: `npx create-react-native-app` can scaffold native dirs in-place if you have Xcode / Android Studio set up.
+3. Install JS dependencies: `yarn install`
+4. Install iOS CocoaPods: `cd ios && pod install` (requires Xcode + CocoaPods)
+5. To develop with mock data (no Reddit credentials needed): `src/config.ts` already has `USE_MOCK = true`
+6. To use real Reddit data: register an app at https://www.reddit.com/prefs/apps, then set `USE_MOCK = false` in `src/config.ts` and add your `CLIENT_ID` to `src/hooks/useRedditAuth.ts`
+7. Run on iOS: `yarn ios`
+8. Run on Android: `yarn android`
 
 ## Contributing
 

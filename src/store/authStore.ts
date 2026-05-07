@@ -100,9 +100,7 @@ export const useAuthStore = create<AuthStore>()(
               headers: {
                 Authorization:
                   'Basic ' +
-                  btoa(
-                    `${process.env.REDDIT_CLIENT_ID ?? 'YOUR_CLIENT_ID'}:`,
-                  ),
+                  btoa('YOUR_CLIENT_ID:'),
                 'Content-Type': 'application/x-www-form-urlencoded',
               },
               body: params.toString(),
